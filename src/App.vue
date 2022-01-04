@@ -32,47 +32,54 @@
           {{ index }}
         </p>
 
-        <div
-          v-if="!shown.includes(index)"
-          class="cover"
-          @click="shown.push(index)"
-        />
-
-        <p
-          v-else
-          class="number"
+        <transition
+          name="fade"
+          mode="out-in"
         >
-          {{ number }}
-        </p>
+          <div
+            v-if="!shown.includes(index)"
+            class="cover"
+            @click="show(index)"
+          />
+
+          <p
+            v-else
+            class="number"
+          >
+            {{ number }}
+          </p>
+        </transition>
       </div>
     </div>
   </div>
 
-  <div
-    v-if="state !== 'playing'"
-    class="overlay"
-    :class="state === 'loss' && 'loss'"
-  >
-    <p class="over">
-      {{ state === 'loss' ? 'Game over' : 'Search successful' }}
-    </p>
-
-    <p class="over-small">
-      {{ state === 'loss' ? 'Inefficient search'
-        : `You found the number in ${goal - moves} moves` }}
-    </p>
-
-    <svg
-      class="play-again"
+  <transition name="show">
+    <div
+      v-if="state !== 'playing'"
+      class="overlay"
       :class="state === 'loss' && 'loss'"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      @click="resetPuzzle"
-    ><path
-      fill="none"
-      d="M0 0h24v24H0z"
-    /><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm4.82-4.924a7 7 0 1 0-1.852 1.266l-.975-1.755A5 5 0 1 1 17 12h-3l2.82 5.076z" /></svg>
-  </div>
+    >
+      <p class="over">
+        {{ state === 'loss' ? 'Game over' : 'Search successful' }}
+      </p>
+
+      <p class="over-small">
+        {{ state === 'loss' ? 'Inefficient search'
+          : `You found the number in ${goal - moves} moves` }}
+      </p>
+
+      <svg
+        class="play-again"
+        :class="state === 'loss' && 'loss'"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        @click="resetPuzzle"
+      ><path
+        fill="none"
+        d="M0 0h24v24H0z"
+      /><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm4.82-4.924a7 7 0 1 0-1.852 1.266l-.975-1.755A5 5 0 1 1 17 12h-3l2.82 5.076z" /></svg>
+    </div>
+  </transition>
 </template>
 
 <script lang="ts">
@@ -102,6 +109,12 @@ export default defineComponent({
       }
     });
 
+    function show(index: number) {
+      if (moves.value > 0) {
+        shown.value.push(index);
+      }
+    }
+
     function resetPuzzle() {
       numbers.value = randomSortedNumbers(size, min, max, range);
       shown.value = [];
@@ -116,6 +129,7 @@ export default defineComponent({
       target,
       moves,
       state,
+      show,
       resetPuzzle,
     };
   },
@@ -124,7 +138,7 @@ export default defineComponent({
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inconsolata, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -165,12 +179,11 @@ export default defineComponent({
 }
 
 .header {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 26px;
 }
 
 .bold {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .break {
@@ -183,22 +196,21 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   margin: 0;
   font-size: 16px;
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 700;
 }
 
 .logo {
-  font-size: 42px;
-  font-weight: 600;
+  font-size: 46px;
+  font-weight: 900;
   margin-top: 5rem;
   margin-bottom: 0;
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .index {
   font-size: 13px;
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   color: lightslategray;
   margin: 0 0 .5rem 0;
 }
@@ -225,16 +237,14 @@ export default defineComponent({
 }
 
 .over {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 60px;
+  font-size: 70px;
   font-weight: 600;
   margin-bottom: 0;
   margin-top: -0.5rem;
 }
 
 .over-small {
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 25px;
+  font-size: 30px;
   margin-bottom: 2rem;
   margin-top: .5rem;
 }
@@ -256,6 +266,64 @@ export default defineComponent({
     &:hover {
       fill: darkred;
     }
+  }
+}
+
+.fade-enter-active {
+  animation: fade-in 125ms;
+}
+
+.fade-leave-active {
+  animation: fade-out 125ms;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.show-enter-active {
+  animation: show-in 280ms cubic-bezier(0.465, 0.183, 0.153, 0.946);
+}
+
+.show-leave-active {
+  animation: show-out 140ms;
+}
+
+@keyframes show-in {
+  0%, 50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes show-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
   }
 }
 </style>
