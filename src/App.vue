@@ -102,7 +102,7 @@ export default defineComponent({
     const state = ref<'playing' | 'win' | 'loss'>('playing');
 
     watch(moves, () => {
-      if (shown.value.find((i) => numbers.value[i] === target.value)) {
+      if (shown.value.find((i) => numbers.value[i] === target.value) !== undefined) {
         state.value = 'win';
       } else if (moves.value === 0) {
         state.value = 'loss';
